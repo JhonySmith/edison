@@ -8,6 +8,7 @@ import firebaseConfig from '../firebase/firebase-config.js';
 import Authorization from './authorization.jsx';
 import StartEvent from './start-event.jsx';
 import FirstPhase from './first-phase.jsx';
+import SecondPhase from './second-phase.jsx';
 import FirstPhaseEnd from './first-phase-end.jsx';
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
@@ -28,6 +29,9 @@ export default class EventPlanner extends React.Component {
       firstPhaseEnd: false,
       secondPhaseTime: 0,
       users: '',
+      secondPhase: false,
+      eventWinner: '',
+      timeWinner: '',
     };
 
     this.userRegHandler = this.userRegHandler.bind(this);
@@ -35,6 +39,7 @@ export default class EventPlanner extends React.Component {
     this.startEventHandler = this.startEventHandler.bind(this);
     this.firstPhaseEndHandler = this.firstPhaseEndHandler.bind(this);
     this.firstPhaseNewAnswerHandler = this.firstPhaseNewAnswerHandler.bind(this);
+    this.openSecondFase = this.openSecondFase.bind(this);
   }
 
   init() {
@@ -70,7 +75,10 @@ export default class EventPlanner extends React.Component {
 
     if (this.state.eventStarted) {
       if (this.state.firstPhaseEnd) {
-        return <FirstPhaseEnd currentUsers={this.state.users} />;
+        if (this.state.secondPhase) {
+          return <SecondPhase eventWinner={this.state.eventWinner} timeWinner={this.state.timeWinner}/>
+        }
+        return <FirstPhaseEnd currentUsers={this.state.users} openSecondFase={this.openSecondFase}/>;
       }
 
       return (
@@ -134,14 +142,25 @@ export default class EventPlanner extends React.Component {
   }
 
   firstPhaseNewAnswerHandler(time, answer) {
-    console.log(time);
     dataBase.ref('event/users/' + this.state.user.split('@')[0]).set({
       answer: answer,
       time: time,
+      user: this.state.user,
     });
   }
 
   firstPhaseEndHandler() {
     this.setState({ firstPhaseEnd: true });
+  }
+
+  openSecondFase(eventWinner, timeWinner) {
+    this.setState({secondPhase: true,
+    eventWinner: eventWinner,
+    timeWinner: timeWinner
+  });
+  }
+
+  backToFirstPhaseResults() {
+    
   }
 }

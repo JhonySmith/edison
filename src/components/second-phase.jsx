@@ -2,9 +2,18 @@ import React, { Component } from 'react';
 import Chart from 'chart.js';
 
 const SecondPhase = (props) => {
-  const { usersAnswers } = props;
+  const {eventWinner, timeWinner} = props;
 
-  return;
+  return <div>
+    Вы согласны с мероприятием:"{eventWinner}" в {timeWinner}?
+    <button>
+      Согласиться
+    </button>
+    <button>
+      Отказаться
+    </button>
+
+  </div>;
 };
 
 export default SecondPhase;
