@@ -1,9 +1,6 @@
 import React from 'react';
 
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/database';
-import firebaseConfig from '../firebase/firebase-config.js';
+import { ShowingPage } from '../utils/constants.js';
 
 import Authorization from './authorization.jsx';
 import StartEvent from './start-event.jsx';
@@ -11,14 +8,14 @@ import FirstPhase from './first-phase.jsx';
 import SecondPhase from './second-phase.jsx';
 import FirstPhaseEnd from './first-phase-end.jsx';
 
-const firebaseApp = firebase.initializeApp(firebaseConfig);
-const dataBase = firebaseApp.database();
-
 export default class EventPlanner extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      showingPage: '',
+      currentUser: '',
+
       auth: false,
       user: '',
       authError: '',
@@ -33,6 +30,8 @@ export default class EventPlanner extends React.Component {
       eventWinner: '',
       timeWinner: '',
     };
+
+    this.authEndHandler = this.authEndHandler.bind(this);
 
     this.userRegHandler = this.userRegHandler.bind(this);
     this.userLoginHandler = this.userLoginHandler.bind(this);
@@ -63,65 +62,75 @@ export default class EventPlanner extends React.Component {
   }
 
   render() {
-    if (!this.state.auth) {
-      return (
-        <Authorization
-          userRegHandler={this.userRegHandler}
-          userLoginHandler={this.userLoginHandler}
-          authError={this.state.authError}
-        />
-      );
-    }
+    const { showingPage } = this.state;
+    const { firebaseApp, dataBase, backServer } = this.props;
 
-    if (this.state.eventStarted) {
-      if (this.state.firstPhaseEnd) {
-        if (this.state.secondPhase) {
-          return <SecondPhase eventWinner={this.state.eventWinner} timeWinner={this.state.timeWinner}/>
-        }
-        return <FirstPhaseEnd currentUsers={this.state.users} openSecondFase={this.openSecondFase}/>;
+    // Выбор отображения экрана
+    switch (showingPage) {
+      // Стартовая страница с настройками 1й фазы
+      case ShowingPage.START_EVENT:
+        return <StartEvent backServer={backServer} />;
+
+      // Первая фаза
+      case ShowingPage.FIRST_PHASE:
+        return (
+          <FirstPhase
+            firstPhaseUsers={this.state.currentUsers}
+            user={this.state.user}
+            timeLeftFirstPhase={Math.floor(
+              (this.state.fisrtPhaseTime - (Date.now() - this.state.eventStartedTime)) / 60000,
+            )}
+            firstPhaseEndHandler={this.firstPhaseEndHandler}
+            firstPhaseNewAnswerHandler={this.firstPhaseNewAnswerHandler}
+          />
+        );
+
+      // Окончание первой фазы с диаграммой
+      case ShowingPage.FIRST_PHASE_END:
+        return (
+          <FirstPhaseEnd currentUsers={this.state.users} openSecondFase={this.openSecondFase} />
+        );
+
+      // Вторая фаза
+      case ShowingPage.SECOND_PHASE:
+        return (
+          <SecondPhase eventWinner={this.state.eventWinner} timeWinner={this.state.timeWinner} />
+        );
+
+      // Окно авторизации
+      default:
+        return (
+          <Authorization
+            firebaseApp={firebaseApp}
+            dataBase={dataBase}
+            authEndHandler={this.authEndHandler}
+          />
+        );
+    }
+  }
+
+  // Определяет текущее событие и подписывается на изменение фазы в БД
+  setConfigStatus() {
+    const { dataBase } = this.props;
+
+    dataBase.ref('event/config/phase').on('value', (snapshot) => {
+      if (snapshot.val() === 0) {
+        dataBase
+          .ref('event/config/')
+          .set({
+            phase: ShowingPage.START_EVENT,
+          })
+          .then(this.setState({ showingPage: snapshot.val() }));
       }
 
-      return (
-        <FirstPhase
-          firstPhaseUsers={this.state.currentUsers}
-          user={this.state.user}
-          timeLeftFirstPhase={Math.floor(
-            (this.state.fisrtPhaseTime - (Date.now() - this.state.eventStartedTime)) / 60000,
-          )}
-          firstPhaseEndHandler={this.firstPhaseEndHandler}
-          firstPhaseNewAnswerHandler={this.firstPhaseNewAnswerHandler}
-        />
-      );
-    }
-
-    if (!this.state.eventStarted) {
-      return <StartEvent startEventHandler={this.startEventHandler} />;
-    }
+      this.setState({ showingPage: snapshot.val() });
+    });
   }
 
-  userRegHandler(user, password) {
-    firebaseApp
-      .auth()
-      .createUserWithEmailAndPassword(user, password)
-      .then(() => {
-        this.setState({ auth: true, user: user, authError: '' });
-        this.init();
-      })
-      .catch((error) => {
-        if (error.code === 'auth/email-already-in-use') {
-          this.setState({ authError: 'Пользователь уже зарегестрирован' });
-        }
-      });
-  }
-
-  userLoginHandler(user, password) {
-    firebaseApp
-      .auth()
-      .signInWithEmailAndPassword(user, password)
-      .then(() => {
-        this.setState({ auth: true, user: user });
-        this.init();
-      });
+  // Выполняется в случае успешной авторизации
+  authEndHandler(currentUser) {
+    this.setState({ currentUser: currentUser });
+    this.setConfigStatus();
   }
 
   startEventHandler(fisrtPhaseTime, secondPhaseTime) {
@@ -154,13 +163,8 @@ export default class EventPlanner extends React.Component {
   }
 
   openSecondFase(eventWinner, timeWinner) {
-    this.setState({secondPhase: true,
-    eventWinner: eventWinner,
-    timeWinner: timeWinner
-  });
+    this.setState({ secondPhase: true, eventWinner: eventWinner, timeWinner: timeWinner });
   }
 
-  backToFirstPhaseResults() {
-    
-  }
+  backToFirstPhaseResults() {}
 }

@@ -1,44 +1,82 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const Authorization = (props) => {
-  const { userRegHandler, userLoginHandler, authError } = props;
+class Authorization extends React.Component {
+  constructor(props) {
+    super(props);
 
-  const [login, setLogin] = useState('');
-  const [password, setPassword] = useState('');
+    this.state = {
+      login: '',
+      password: '',
+    };
+  }
 
-  return (
-    <form>
-      <label htmlFor="login">
-        Логин
-        <input type="text" name="login" onChange={(evt) => setLogin(evt.target.value)}></input>
-      </label>
-      <label htmlFor="password">
-        Пароль
-        <input
-          type="text"
-          name="password"
-          onChange={(evt) => setPassword(evt.target.value)}
-        ></input>
-      </label>
-      <button
-        onClick={(evt) => {
-          evt.preventDefault();
-          userLoginHandler(login, password);
-        }}
-      >
-        Вход
-      </button>
-      <button
-        onClick={(evt) => {
-          evt.preventDefault();
-          userRegHandler(login, password);
-        }}
-      >
-        Зарегестрироваться
-      </button>
-      <div>{authError}</div>
-    </form>
-  );
-};
+  render() {
+    return (
+      <form>
+        <label htmlFor="login">
+          Логин
+          <input
+            type="text"
+            name="login"
+            onChange={(evt) => this.setState({ login: evt.target.value })}
+          ></input>
+        </label>
+
+        <label htmlFor="password">
+          Пароль
+          <input
+            type="text"
+            name="password"
+            onChange={(evt) => this.setState({ password: evt.target.value })}
+          ></input>
+        </label>
+
+        <button
+          onClick={(evt) => {
+            evt.preventDefault();
+            this.userLoginHandler();
+          }}
+        >
+          Вход
+        </button>
+
+        <button
+          onClick={(evt) => {
+            evt.preventDefault();
+            this.userRegHandler();
+          }}
+        >
+          Зарегестрироваться
+        </button>
+
+        <div></div>
+      </form>
+    );
+  }
+
+  // Вход с логином паролем
+  userLoginHandler() {
+    const { firebaseApp, authEndHandler } = this.props;
+
+    firebaseApp
+      .auth()
+      .signInWithEmailAndPassword(this.state.user, this.state.password)
+      .then(() => {
+        authEndHandler(this.state.user);
+      });
+  }
+
+  // Вход через регистрацию
+  userRegHandler() {
+    const { firebaseApp, authEndHandler } = this.props;
+
+    firebaseApp
+      .auth()
+      .createUserWithEmailAndPassword(this.state.user, this.state.password)
+      .then(() => {
+        authEndHandler(this.state.user);
+      });
+  }
+}
 
 export default Authorization;
