@@ -87,8 +87,6 @@ export default class EventPlanner extends React.Component {
     const { dataBase } = this.props;
 
     dataBase.ref('event/config/phase').on('value', (snapshot) => {
-      console.log(123);
-      console.log(snapshot.val());
       this.setState({ showingPage: snapshot.val() });
     });
   }

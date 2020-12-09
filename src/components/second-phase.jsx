@@ -2,27 +2,28 @@ import React, { useState } from 'react';
 
 const SecondPhase = (props) => {
   const { currentUser, currentUserId, dataBase } = props;
-  const [users, setUsers] = useState('');
+  const [users, setUsers] = useState([]);
   const [alreadyAnswer, setAlreadyAnswer] = useState(true);
 
-  dataBase.ref('event/config/secondPhaseUsers').on('value', (snapshot) => {
-    setUsers(Object.values(snapshot.val()));
+  dataBase.ref('event/secondPhaseUsers').on('value', (snapshot) => {
+    if (Object.values(snapshot.val()).length !== users.length) {
+      setUsers(Object.values(snapshot.val()));
+    }
 
-    //Проверяем нет ли данного пользователя в уже ответивших
-    if (!Object.keys(snapshot.val()).includes(currentUserId)) {
-      setAlreadyAnswer(false);
+    if (Object.keys(snapshot.val()).includes(currentUserId) !== alreadyAnswer) {
+      setAlreadyAnswer(Object.keys(snapshot.val()).includes(currentUserId));
     }
   });
 
   const userAccept = () => {
-    dataBase.ref('event/config/secondPhaseUsers/' + { currentUserId }).set({
+    dataBase.ref('event/secondPhaseUsers/' + currentUserId).set({
       user: currentUser,
       answer: 'yes',
     });
   };
 
   const userReject = () => {
-    dataBase.ref('event/config/secondPhaseUsers/' + { currentUserId }).set({
+    dataBase.ref('event/secondPhaseUsers/' + currentUserId).set({
       user: currentUser,
       answer: 'no',
     });

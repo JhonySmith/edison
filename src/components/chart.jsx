@@ -6,17 +6,21 @@ export default class MyChart extends Component {
     super(props);
 
     this.chartRef = React.createRef();
+    this.myChartRef = 0;
   }
 
   componentDidMount() {
-    const myChartRef = this.chartRef.current.getContext('2d');
+    this.myChartRef = this.chartRef.current.getContext('2d');
+  }
+
+  render() {
     const { times, lengthTime, answers, answersLength } = this.props;
     console.log(times);
     console.log(lengthTime);
     console.log(answers);
     console.log(answersLength);
 
-    new Chart(myChartRef, {
+    new Chart(this.myChartRef, {
       type: 'pie',
       data: {
         datasets: [
@@ -47,9 +51,8 @@ export default class MyChart extends Component {
         },
       },
     });
-  }
 
-  render() {
+    console.log('Chart');
     return <canvas ref={this.chartRef}></canvas>;
   }
 }

@@ -13,19 +13,21 @@ class Authorization extends React.Component {
 
   render() {
     return (
-      <form>
-        <label htmlFor="login">
+      <form className="centered-form">
+        <label htmlFor="login" className="label">
           Логин
           <input
+            className="input"
             type="text"
             name="login"
             onChange={(evt) => this.setState({ login: evt.target.value })}
           ></input>
         </label>
 
-        <label htmlFor="password">
+        <label htmlFor="password" className="label">
           Пароль
           <input
+            className="input"
             type="text"
             name="password"
             onChange={(evt) => this.setState({ password: evt.target.value })}
@@ -33,6 +35,7 @@ class Authorization extends React.Component {
         </label>
 
         <button
+          className="button"
           onClick={(evt) => {
             evt.preventDefault();
             this.userLoginHandler();
@@ -42,6 +45,7 @@ class Authorization extends React.Component {
         </button>
 
         <button
+          className="button"
           onClick={(evt) => {
             evt.preventDefault();
             this.userRegHandler();

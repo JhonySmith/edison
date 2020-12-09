@@ -9,23 +9,24 @@ export const getUniqArr = (data, param) => {
 const FirstPhaseEnd = (props) => {
   const { setConfigStatus, dataBase, openSecondFase } = props;
   const [timeLeft, setTimeLeft] = useState(0);
-  const [currentUsers, setcurrentUsers] = useState('');
+  const [currentUsers, setcurrentUsers] = useState([]);
 
   // Подписываемся на счетчик времени из БД
   dataBase.ref('event/config/').on('value', (snapshot) => {
-    setTimeLeft(snapshot.val().secondPhaseTimeLeft);
-
-    // Обновляем общее отображение приложения, если сервер ответил что событие уже закончилось
-    if (snapshot.val().secondPhaseTimeLeft <= 0) {
-      setConfigStatus();
+    if (snapshot.val().secondPhaseTimeLeft !== timeLeft) {
+      setTimeLeft(snapshot.val().secondPhaseTimeLeft);
     }
   });
 
-  dataBase.ref('event/config/firstPhaseUsers').on('value', (snapshot) => {
-    setcurrentUsers(Object.values(snapshot.val()));
+  dataBase.ref('event/firstPhaseUsers').on('value', (snapshot) => {
+    if (Object.values(snapshot.val()).length !== currentUsers.length) {
+      setcurrentUsers(Object.values(snapshot.val()));
+      console.log(Object.values(snapshot.val()));
+    }
   });
 
   const times = getUniqArr(currentUsers, 'time');
+  console.log(times);
 
   const lengthTime = [];
   const answers = [];
@@ -40,10 +41,10 @@ const FirstPhaseEnd = (props) => {
   times.forEach((time) => {
     const filteredByTime = currentUsers.filter((element) => element.time === time);
     lengthTime.push(filteredByTime.length);
-    const uniqAnswer = getUniqArr(filteredByTime, 'answer');
+    const uniqAnswer = getUniqArr(filteredByTime, 'event');
     uniqAnswer.forEach((answer) => {
       answers.push(answer);
-      const filteredByAnswer = filteredByTime.filter((element) => element.answer === answer);
+      const filteredByAnswer = filteredByTime.filter((element) => element.event === answer);
       if (filteredByAnswer.length > winAnswer.count) {
         winAnswer.count = filteredByAnswer.length;
         winAnswer.answer = answer;
@@ -52,6 +53,8 @@ const FirstPhaseEnd = (props) => {
       answersLength.push(filteredByAnswer.length);
     });
   });
+
+  console.log(lengthTime);
 
   return (
     <div>
