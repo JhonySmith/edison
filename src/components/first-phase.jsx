@@ -2,27 +2,41 @@ import React, { useState } from 'react';
 import getPickTimes from '../utils/time.js';
 
 const FirstPhase = (props) => {
-  const {
-    timeLeftFirstPhase,
-    firstPhaseUsers,
-    user,
-    firstPhaseEndHandler,
-    firstPhaseNewAnswerHandler,
-  } = props;
+  const { userId, dataBase, setConfigStatus } = props;
 
-  const [time, setTime] = useState('');
-  const [event, setEvent] = useState('');
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [usersCount, setUsersCount] = useState(0);
+  const [time, setTime] = useState(0);
+  const [answer, setAnswer] = useState(0);
 
-  if (timeLeftFirstPhase <= 0) {
-    firstPhaseEndHandler();
+  let alreadyAnswer = true;
+  let isID = '';
+  let Answers = '';
+
+  // Подписываемся на счетчик ответивших пользователей из БД
+  dataBase.ref('event/config/firstPhaseUsers').on('value', (snapshot) => {
+    Answers = Object.keys(snapshot.val()).length;
+    isID = Object.keys(snapshot.val()).includes(userId);
+    console.log(Answers);
+    console.log(isID);
+  });
+
+  if (!isID) {
+    alreadyAnswer = false;
   }
 
-  const alredyAnswer = firstPhaseUsers.includes(user.split('@')[0]);
+  // Функция отправки информации с ответом и выбраным веременем в БД
+  const sendAnswer = () => {
+    dataBase.ref('event/config/firstPhaseUsers/' + userId).set({
+      time: time,
+      event: answer,
+    });
+  };
 
   return (
     <section>
-      <div>Оставшееся время: {timeLeftFirstPhase}минут</div>
-      <div>Пользователей проголосовало: {firstPhaseUsers.length}</div>
+      <div>Оставшееся время: {timeLeft / 60000}минут</div>
+      <div>Пользователей проголосовало: {Answers}</div>
       <form>
         <label htmlFor="event-time">Выберете время</label>
         <select name="event-time" onChange={(evt) => setTime(evt.target.value)}>
@@ -31,17 +45,24 @@ const FirstPhase = (props) => {
           ))}
         </select>
         <label htmlFor="event">Введите мероприятие</label>
-        <input type="textarea" name="event" onChange={(evt) => setEvent(evt.target.value)}></input>
+        <input
+          type="textarea"
+          name="event"
+          onChange={(evt) => {
+            evt.preventDefault();
+            setAnswer(evt.target.value);
+          }}
+        ></input>
 
         <button
-          disabled={alredyAnswer ? true : false}
+          disabled={alreadyAnswer}
           type="submit"
           onClick={(evt) => {
             evt.preventDefault();
-            firstPhaseNewAnswerHandler(time, event);
+            sendAnswer();
           }}
         >
-          {alredyAnswer ? 'Уже отправлено' : 'Отправить'}
+          {alreadyAnswer ? 'Уже отправлено' : 'Отправить'}
         </button>
       </form>
     </section>

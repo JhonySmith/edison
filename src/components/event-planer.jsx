@@ -15,50 +15,12 @@ export default class EventPlanner extends React.Component {
     this.state = {
       showingPage: '',
       currentUser: '',
-
-      auth: false,
-      user: '',
-      authError: '',
-      eventStarted: false,
-      currentUsers: 0,
-      eventStartedTime: 0,
-      fisrtPhaseTime: 0,
-      firstPhaseEnd: false,
-      secondPhaseTime: 0,
-      users: '',
-      secondPhase: false,
-      eventWinner: '',
-      timeWinner: '',
+      currentUserID: '',
     };
 
     this.authEndHandler = this.authEndHandler.bind(this);
-
-    this.userRegHandler = this.userRegHandler.bind(this);
-    this.userLoginHandler = this.userLoginHandler.bind(this);
-    this.startEventHandler = this.startEventHandler.bind(this);
-    this.firstPhaseEndHandler = this.firstPhaseEndHandler.bind(this);
-    this.firstPhaseNewAnswerHandler = this.firstPhaseNewAnswerHandler.bind(this);
+    this.setConfigStatus = this.setConfigStatus.bind(this);
     this.openSecondFase = this.openSecondFase.bind(this);
-  }
-
-  init() {
-    dataBase
-      .ref('event')
-      .once('value')
-      .then((snapshot) => {
-        this.setState({
-          eventStarted: snapshot.val().config.start,
-          fisrtPhaseTime: snapshot.val().config.fisrt_phase_time,
-          secondPhaseTime: snapshot.val().config.second_phase_time,
-          eventStartedTime: snapshot.val().config.start_time,
-          firstPhaseEnd: snapshot.val().config.fisrt_phase_end,
-          currentUsers: Object.keys(snapshot.val().users),
-        });
-      });
-    dataBase.ref('event/users').on('value', (snapshot) => {
-      this.setState({ currentUsers: Object.keys(snapshot.val()), users: snapshot.val() });
-      console.log(snapshot.val());
-    });
   }
 
   render() {
@@ -69,32 +31,43 @@ export default class EventPlanner extends React.Component {
     switch (showingPage) {
       // Стартовая страница с настройками 1й фазы
       case ShowingPage.START_EVENT:
-        return <StartEvent backServer={backServer} />;
+        return (
+          <StartEvent
+            backServer={backServer}
+            dataBase={dataBase}
+            setConfigStatus={this.setConfigStatus}
+          />
+        );
 
       // Первая фаза
       case ShowingPage.FIRST_PHASE:
         return (
           <FirstPhase
-            firstPhaseUsers={this.state.currentUsers}
-            user={this.state.user}
-            timeLeftFirstPhase={Math.floor(
-              (this.state.fisrtPhaseTime - (Date.now() - this.state.eventStartedTime)) / 60000,
-            )}
-            firstPhaseEndHandler={this.firstPhaseEndHandler}
-            firstPhaseNewAnswerHandler={this.firstPhaseNewAnswerHandler}
+            userId={this.state.currentUserID}
+            dataBase={this.props.dataBase}
+            setConfigStatus={this.setConfigStatus}
           />
         );
 
       // Окончание первой фазы с диаграммой
       case ShowingPage.FIRST_PHASE_END:
         return (
-          <FirstPhaseEnd currentUsers={this.state.users} openSecondFase={this.openSecondFase} />
+          <FirstPhaseEnd
+            setConfigStatus={this.setConfigStatus}
+            dataBase={this.props.dataBase}
+            openSecondFase={this.openSecondFase}
+          />
         );
 
       // Вторая фаза
       case ShowingPage.SECOND_PHASE:
         return (
-          <SecondPhase eventWinner={this.state.eventWinner} timeWinner={this.state.timeWinner} />
+          <SecondPhase
+            currentUser={this.state.currentUser}
+            currentUserId={this.state.currentUserID}
+            setConfigStatus={this.setConfigStatus}
+            dataBase={this.props.dataBase}
+          />
         );
 
       // Окно авторизации
@@ -114,57 +87,19 @@ export default class EventPlanner extends React.Component {
     const { dataBase } = this.props;
 
     dataBase.ref('event/config/phase').on('value', (snapshot) => {
-      if (snapshot.val() === 0) {
-        dataBase
-          .ref('event/config/')
-          .set({
-            phase: ShowingPage.START_EVENT,
-          })
-          .then(this.setState({ showingPage: snapshot.val() }));
-      }
-
+      console.log(123);
+      console.log(snapshot.val());
       this.setState({ showingPage: snapshot.val() });
     });
   }
 
   // Выполняется в случае успешной авторизации
-  authEndHandler(currentUser) {
-    this.setState({ currentUser: currentUser });
+  authEndHandler(currentUser, id) {
+    this.setState({ currentUser: currentUser, currentUserID: id });
     this.setConfigStatus();
   }
 
-  startEventHandler(fisrtPhaseTime, secondPhaseTime) {
-    const nowDate = Date.now();
-
-    dataBase
-      .ref('event/config')
-      .set({
-        start: true,
-        fisrt_phase_time: fisrtPhaseTime * 60000,
-        fisrt_phase_end: false,
-        second_phase_time: secondPhaseTime * 60000,
-        start_time: nowDate,
-      })
-      .then(() => {
-        this.init();
-      });
+  openSecondFase() {
+    this.setState({ showingPage: ShowingPage.SECOND_PHASE });
   }
-
-  firstPhaseNewAnswerHandler(time, answer) {
-    dataBase.ref('event/users/' + this.state.user.split('@')[0]).set({
-      answer: answer,
-      time: time,
-      user: this.state.user,
-    });
-  }
-
-  firstPhaseEndHandler() {
-    this.setState({ firstPhaseEnd: true });
-  }
-
-  openSecondFase(eventWinner, timeWinner) {
-    this.setState({ secondPhase: true, eventWinner: eventWinner, timeWinner: timeWinner });
-  }
-
-  backToFirstPhaseResults() {}
 }

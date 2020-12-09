@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import MyChart from './chart.jsx';
 
 export const getUniqArr = (data, param) => {
@@ -7,9 +7,25 @@ export const getUniqArr = (data, param) => {
 };
 
 const FirstPhaseEnd = (props) => {
-  const { currentUsers, openSecondFase } = props;
+  const { setConfigStatus, dataBase, openSecondFase } = props;
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [currentUsers, setcurrentUsers] = useState('');
 
-  const times = getUniqArr(Object.values(currentUsers), 'time');
+  // Подписываемся на счетчик времени из БД
+  dataBase.ref('event/config/').on('value', (snapshot) => {
+    setTimeLeft(snapshot.val().secondPhaseTimeLeft);
+
+    // Обновляем общее отображение приложения, если сервер ответил что событие уже закончилось
+    if (snapshot.val().secondPhaseTimeLeft <= 0) {
+      setConfigStatus();
+    }
+  });
+
+  dataBase.ref('event/config/firstPhaseUsers').on('value', (snapshot) => {
+    setcurrentUsers(Object.values(snapshot.val()));
+  });
+
+  const times = getUniqArr(currentUsers, 'time');
 
   const lengthTime = [];
   const answers = [];
@@ -19,10 +35,10 @@ const FirstPhaseEnd = (props) => {
     answer: '',
     count: 0,
     time: '',
-  }
+  };
 
   times.forEach((time) => {
-    const filteredByTime = Object.values(currentUsers).filter((element) => element.time === time);
+    const filteredByTime = currentUsers.filter((element) => element.time === time);
     lengthTime.push(filteredByTime.length);
     const uniqAnswer = getUniqArr(filteredByTime, 'answer');
     uniqAnswer.forEach((answer) => {
@@ -47,10 +63,14 @@ const FirstPhaseEnd = (props) => {
       />
       <div>Выбрано мероприятие: {winAnswer.answer}</div>
       <div>Дата проведения: {winAnswer.time}</div>
-      <button onClick={(evt) => {
-        evt.preventDefault();
-        openSecondFase(winAnswer.answer, winAnswer.time);
-      }}>Перейти ко 2й фазе</button>
+      <button
+        onClick={(evt) => {
+          evt.preventDefault();
+          openSecondFase();
+        }}
+      >
+        Перейти ко 2й фазе
+      </button>
     </div>
   );
 };

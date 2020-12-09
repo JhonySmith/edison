@@ -7,6 +7,7 @@ class Authorization extends React.Component {
     this.state = {
       login: '',
       password: '',
+      id: '',
     };
   }
 
@@ -60,9 +61,10 @@ class Authorization extends React.Component {
 
     firebaseApp
       .auth()
-      .signInWithEmailAndPassword(this.state.user, this.state.password)
+      .signInWithEmailAndPassword(this.state.login, this.state.password)
       .then(() => {
-        authEndHandler(this.state.user);
+        this.setState({ id: firebaseApp.auth().currentUser.uid });
+        authEndHandler(this.state.login, this.state.id);
       });
   }
 
@@ -72,9 +74,10 @@ class Authorization extends React.Component {
 
     firebaseApp
       .auth()
-      .createUserWithEmailAndPassword(this.state.user, this.state.password)
+      .createUserWithEmailAndPassword(this.state.login, this.state.password)
       .then(() => {
-        authEndHandler(this.state.user);
+        this.setState({ id: firebaseApp.auth().currentUser.uid });
+        authEndHandler(this.state.login, this.state.id);
       });
   }
 }
