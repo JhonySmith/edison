@@ -7,23 +7,28 @@ body {
   height: 100%;
 }
 
-.centered-form {
-  padding: 20px;
-  margin: 0 auto;
-  width: 400px;
-
+.form {
   display: flex;
+  box-sizing: border-box;
   flex-direction: column;
   align-items: center;
-  margin-top: 30%;
 
-  border: 1px solid black;
+  padding: 5px;
+  margin: 0 auto;
+
+  border: 2px solid black;
 
   color: black;
 }
 
+.form--auth {
+  width: 300px;
+  margin-top: 200px;
+}
+
 .button {
   display: block;
+  box-sizing: border-box;
   border: none;
 
   margin: 5px;
@@ -36,12 +41,38 @@ body {
   background-color: black;
 }
 
+.button--auth {
+  width: 235px;
+} 
+
 .label {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
   font-size: 15px;
   font-family: 'Courier New', Courier, monospace;
 }
+
+.label--auth {
+  width: 235px;
+}
+
 
 .input {
   margin-bottom: 10px;
   margin-left: 10px;
 }
+
+.bold-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+}
+
+.bold-text--auth {
+  width: 235px;
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  padding-bottom: 15px;
+}
+

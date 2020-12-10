@@ -13,21 +13,25 @@ class Authorization extends React.Component {
 
   render() {
     return (
-      <form className="centered-form">
-        <label htmlFor="login" className="label">
+      <form className="form form--auth">
+        <b className="bold-text bold-text--auth">
+          Введите ваш email в качестве логина и пароль. Если не зарегестрированы, введите данные и
+          нажмите - "Регистрация" !
+        </b>
+        <label htmlFor="login" className="label label--auth">
           Логин
           <input
-            className="input"
+            className="input input--auth"
             type="text"
             name="login"
             onChange={(evt) => this.setState({ login: evt.target.value })}
           ></input>
         </label>
 
-        <label htmlFor="password" className="label">
+        <label htmlFor="password" className="label label--auth">
           Пароль
           <input
-            className="input"
+            className="input input--auth"
             type="text"
             name="password"
             onChange={(evt) => this.setState({ password: evt.target.value })}
@@ -35,7 +39,7 @@ class Authorization extends React.Component {
         </label>
 
         <button
-          className="button"
+          className="button button--auth"
           onClick={(evt) => {
             evt.preventDefault();
             this.userLoginHandler();
@@ -45,7 +49,7 @@ class Authorization extends React.Component {
         </button>
 
         <button
-          className="button"
+          className="button button--auth"
           onClick={(evt) => {
             evt.preventDefault();
             this.userRegHandler();
