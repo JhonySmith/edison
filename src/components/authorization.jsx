@@ -8,8 +8,43 @@ class Authorization extends React.Component {
       login: '',
       password: '',
       id: '',
-      notValid: false,
+      notValid: 0,
     };
+  }
+
+  userLoginHandler() {
+    const { firebaseApp, authEndHandler } = this.props;
+
+    firebaseApp
+      .auth()
+      .signInWithEmailAndPassword(this.state.login, this.state.password)
+      .then(() => {
+        this.setState({ id: firebaseApp.auth().currentUser.uid });
+        authEndHandler(this.state.login, this.state.id);
+      })
+      .catch((error) => {
+        let errorCode = error.code;
+
+        switch (errorCode) {
+          case 'auth/user-not-found':
+            console.log(1);
+            this.setState({ notValid: 'Такого пользователя не существует' });
+            break;
+
+          case 'auth/invalid-email':
+            console.log(2);
+            this.setState({ notValid: 'Вы ввели некорректный адрес почты' });
+            break;
+
+          case 'auth/wrong-password':
+            console.log(3);
+            this.setState({ notValid: 'Проверьте правильность пароля' });
+            break;
+
+          default:
+            this.setState({ notValid: error.message });
+        }
+      });
   }
 
   render() {
@@ -20,24 +55,25 @@ class Authorization extends React.Component {
           нажмите - "Регистрация" !
         </b>
         <label htmlFor="login" className="label label--auth">
-          Логин
+          Логин:
           <input
             className="input input--auth"
             type="email"
             name="login"
+            placeholder="E-mail"
             onChange={(evt) => {
               this.setState({ login: evt.target.value });
-              this.validateDatas();
             }}
           ></input>
         </label>
 
         <label htmlFor="password" className="label label--auth">
-          Пароль
+          Пароль:
           <input
             className="input input--auth"
             type="password"
             name="password"
+            placeholder="Password"
             onChange={(evt) => this.setState({ password: evt.target.value })}
           ></input>
         </label>
@@ -56,7 +92,7 @@ class Authorization extends React.Component {
           className="button button--auth"
           onClick={(evt) => {
             evt.preventDefault();
-            this.userRegHandler();
+            this.validateDatas() && this.userRegHandler();
           }}
         >
           Зарегестрироваться
@@ -68,17 +104,6 @@ class Authorization extends React.Component {
   }
 
   // Вход с логином паролем
-  userLoginHandler() {
-    const { firebaseApp, authEndHandler } = this.props;
-
-    firebaseApp
-      .auth()
-      .signInWithEmailAndPassword(this.state.login, this.state.password)
-      .then(() => {
-        this.setState({ id: firebaseApp.auth().currentUser.uid });
-        authEndHandler(this.state.login, this.state.id);
-      });
-  }
 
   // Вход через регистрацию
   userRegHandler() {
@@ -90,17 +115,28 @@ class Authorization extends React.Component {
       .then(() => {
         this.setState({ id: firebaseApp.auth().currentUser.uid });
         authEndHandler(this.state.login, this.state.id);
+      })
+      .catch(function (error) {
+        const errorCode = error.code;
+
+        switch (errorCode) {
+          case 'auth/email-already-in-use':
+            this.setState({ notValid: 'Данный логин уже используется' });
+
+          case 'auth/invalid-email':
+            this.setState({ notValid: 'Вы ввели некорректный адрес почты' });
+        }
       });
   }
 
   validateDatas() {
-    const isValid = this.state.login.value.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
+    const isValid = this.state.login.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
 
-    if (isValid) {
-      this.setState({ notValid: false });
-    } else {
-      this.setState({ notValid: 'Вы ввели некорректные данные' });
-    }
+    isValid
+      ? this.setState({ notValid: false })
+      : this.setState({ notValid: 'Вы ввели некорректные данные' });
+
+    return isValid;
   }
 }
 
