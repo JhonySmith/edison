@@ -8,6 +8,7 @@ class Authorization extends React.Component {
       login: '',
       password: '',
       id: '',
+      notValid: false,
     };
   }
 
@@ -22,9 +23,12 @@ class Authorization extends React.Component {
           Логин
           <input
             className="input input--auth"
-            type="text"
+            type="email"
             name="login"
-            onChange={(evt) => this.setState({ login: evt.target.value })}
+            onChange={(evt) => {
+              this.setState({ login: evt.target.value });
+              this.validateDatas();
+            }}
           ></input>
         </label>
 
@@ -32,7 +36,7 @@ class Authorization extends React.Component {
           Пароль
           <input
             className="input input--auth"
-            type="text"
+            type="password"
             name="password"
             onChange={(evt) => this.setState({ password: evt.target.value })}
           ></input>
@@ -58,7 +62,7 @@ class Authorization extends React.Component {
           Зарегестрироваться
         </button>
 
-        <div></div>
+        <div>{this.state.notValid ? this.state.notValid : ''}</div>
       </form>
     );
   }
@@ -87,6 +91,16 @@ class Authorization extends React.Component {
         this.setState({ id: firebaseApp.auth().currentUser.uid });
         authEndHandler(this.state.login, this.state.id);
       });
+  }
+
+  validateDatas() {
+    const isValid = this.state.login.value.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
+
+    if (isValid) {
+      this.setState({ notValid: false });
+    } else {
+      this.setState({ notValid: 'Вы ввели некорректные данные' });
+    }
   }
 }
 
