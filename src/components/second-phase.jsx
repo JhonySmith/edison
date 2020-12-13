@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
+import StopEvent from './stop-event.jsx';
 
 const SecondPhase = (props) => {
-  const { currentUser, currentUserId, dataBase } = props;
+  const { currentUser, currentUserId, dataBase, userId, backServer } = props;
   const [users, setUsers] = useState([]);
   const [alreadyAnswer, setAlreadyAnswer] = useState(true);
+  const [admin, setAdmin] = useState(0);
+
+  dataBase
+    .ref('event/admin')
+    .once('value')
+    .then((snapshot) => {
+      if (admin !== snapshot.val()) {
+        setAdmin(snapshot.val());
+      }
+    });
 
   dataBase.ref('event/secondPhaseUsers').on('value', (snapshot) => {
     if (Object.values(snapshot.val()).length !== users.length) {
@@ -57,6 +68,7 @@ const SecondPhase = (props) => {
       >
         Отказаться
       </button>
+      {admin === userId ? <StopEvent backServer={backServer} /> : ''}
     </div>
   );
 };

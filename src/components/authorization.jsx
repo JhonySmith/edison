@@ -12,6 +12,7 @@ class Authorization extends React.Component {
     };
   }
 
+  // Вход с логином паролем
   userLoginHandler() {
     const { firebaseApp, authEndHandler } = this.props;
 
@@ -27,18 +28,48 @@ class Authorization extends React.Component {
 
         switch (errorCode) {
           case 'auth/user-not-found':
-            console.log(1);
             this.setState({ notValid: 'Такого пользователя не существует' });
             break;
 
           case 'auth/invalid-email':
-            console.log(2);
             this.setState({ notValid: 'Вы ввели некорректный адрес почты' });
             break;
 
           case 'auth/wrong-password':
-            console.log(3);
             this.setState({ notValid: 'Проверьте правильность пароля' });
+            break;
+
+          default:
+            this.setState({ notValid: error.message });
+        }
+      });
+  }
+
+  // Вход через регистрацию
+  userRegHandler() {
+    const { firebaseApp, authEndHandler } = this.props;
+
+    firebaseApp
+      .auth()
+      .createUserWithEmailAndPassword(this.state.login, this.state.password)
+      .then(() => {
+        this.setState({ id: firebaseApp.auth().currentUser.uid });
+        authEndHandler(this.state.login, this.state.id);
+      })
+      .catch((error) => {
+        let errorCode = error.code;
+
+        switch (errorCode) {
+          case 'auth/email-already-in-use':
+            this.setState({ notValid: 'Такой пользователь уже существует' });
+            break;
+
+          case 'auth/wrong-password':
+            this.setState({ notValid: 'Проверьте правильность пароля' });
+            break;
+
+          case 'auth/weak-password':
+            this.setState({ notValid: 'Пароль ненадежен' });
             break;
 
           default:
@@ -92,51 +123,15 @@ class Authorization extends React.Component {
           className="button button--auth"
           onClick={(evt) => {
             evt.preventDefault();
-            this.validateDatas() && this.userRegHandler();
+            this.userRegHandler();
           }}
         >
           Зарегестрироваться
         </button>
 
-        <div>{this.state.notValid ? this.state.notValid : ''}</div>
+        <div className="error-message">{this.state.notValid ? this.state.notValid : ''}</div>
       </form>
     );
-  }
-
-  // Вход с логином паролем
-
-  // Вход через регистрацию
-  userRegHandler() {
-    const { firebaseApp, authEndHandler } = this.props;
-
-    firebaseApp
-      .auth()
-      .createUserWithEmailAndPassword(this.state.login, this.state.password)
-      .then(() => {
-        this.setState({ id: firebaseApp.auth().currentUser.uid });
-        authEndHandler(this.state.login, this.state.id);
-      })
-      .catch(function (error) {
-        const errorCode = error.code;
-
-        switch (errorCode) {
-          case 'auth/email-already-in-use':
-            this.setState({ notValid: 'Данный логин уже используется' });
-
-          case 'auth/invalid-email':
-            this.setState({ notValid: 'Вы ввели некорректный адрес почты' });
-        }
-      });
-  }
-
-  validateDatas() {
-    const isValid = this.state.login.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
-
-    isValid
-      ? this.setState({ notValid: false })
-      : this.setState({ notValid: 'Вы ввели некорректные данные' });
-
-    return isValid;
   }
 }
 

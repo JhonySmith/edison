@@ -35,7 +35,7 @@ export default class EventPlanner extends React.Component {
           <StartEvent
             backServer={backServer}
             dataBase={dataBase}
-            setConfigStatus={this.setConfigStatus}
+            currentUserID={this.state.currentUserID}
           />
         );
 
@@ -43,9 +43,9 @@ export default class EventPlanner extends React.Component {
       case ShowingPage.FIRST_PHASE:
         return (
           <FirstPhase
+            backServer={backServer}
             userId={this.state.currentUserID}
             dataBase={this.props.dataBase}
-            setConfigStatus={this.setConfigStatus}
           />
         );
 
@@ -56,6 +56,8 @@ export default class EventPlanner extends React.Component {
             setConfigStatus={this.setConfigStatus}
             dataBase={this.props.dataBase}
             openSecondFase={this.openSecondFase}
+            backServer={backServer}
+            userId={this.state.currentUserID}
           />
         );
 
@@ -67,6 +69,8 @@ export default class EventPlanner extends React.Component {
             currentUserId={this.state.currentUserID}
             setConfigStatus={this.setConfigStatus}
             dataBase={this.props.dataBase}
+            backServer={backServer}
+            userId={this.state.currentUserID}
           />
         );
 
@@ -87,7 +91,9 @@ export default class EventPlanner extends React.Component {
     const { dataBase } = this.props;
 
     dataBase.ref('event/config/phase').on('value', (snapshot) => {
-      this.setState({ showingPage: snapshot.val() });
+      if (this.state.showingPage !== snapshot.val()) {
+        this.setState({ showingPage: snapshot.val() });
+      }
     });
   }
 

@@ -1,5 +1,6 @@
-import React, { Component, useState } from 'react';
-import MyChart from './chart.jsx';
+import React, { useState } from 'react';
+import { Pie } from 'react-chartjs-2';
+import StopEvent from './stop-event.jsx';
 
 export const getUniqArr = (data, param) => {
   const datas = new Set(data.map((dt) => dt[param]));
@@ -7,9 +8,10 @@ export const getUniqArr = (data, param) => {
 };
 
 const FirstPhaseEnd = (props) => {
-  const { setConfigStatus, dataBase, openSecondFase } = props;
+  const { dataBase, openSecondFase, userId, backServer } = props;
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentUsers, setcurrentUsers] = useState([]);
+  const [admin, setAdmin] = useState(0);
 
   // Подписываемся на счетчик времени из БД
   dataBase.ref('event/config/').on('value', (snapshot) => {
@@ -18,25 +20,35 @@ const FirstPhaseEnd = (props) => {
     }
   });
 
-  dataBase.ref('event/firstPhaseUsers').on('value', (snapshot) => {
-    if (Object.values(snapshot.val()).length !== currentUsers.length) {
-      setcurrentUsers(Object.values(snapshot.val()));
-      console.log(Object.values(snapshot.val()));
-    }
-  });
+  dataBase
+    .ref('event/firstPhaseUsers')
+    .once('value')
+    .then((snapshot) => {
+      if (Object.values(snapshot.val()).length !== currentUsers.length) {
+        setcurrentUsers(Object.values(snapshot.val()));
+      }
+    });
 
-  const times = getUniqArr(currentUsers, 'time');
-  console.log(times);
+  dataBase
+    .ref('event/admin')
+    .once('value')
+    .then((snapshot) => {
+      if (admin !== snapshot.val()) {
+        setAdmin(snapshot.val());
+      }
+    });
 
-  const lengthTime = [];
-  const answers = [];
-  const answersLength = [];
+  let times = getUniqArr(currentUsers, 'time');
 
   let winAnswer = {
     answer: '',
     count: 0,
     time: '',
   };
+
+  let lengthTime = [];
+  let answers = [];
+  let answersLength = [];
 
   times.forEach((time) => {
     const filteredByTime = currentUsers.filter((element) => element.time === time);
@@ -54,19 +66,51 @@ const FirstPhaseEnd = (props) => {
     });
   });
 
-  console.log(lengthTime);
+  const datasetKeyProvider = () => {
+    return Math.random();
+  };
 
   return (
     <div>
-      <MyChart
-        times={times}
-        lengthTime={lengthTime}
-        answers={answers}
-        answersLength={answersLength}
+      <Pie
+        data={{
+          datasets: [
+            {
+              data: answersLength,
+              labels: answers,
+              label: 'chart1',
+              backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+            },
+
+            {
+              data: lengthTime,
+              labels: times,
+              label: 'chart2',
+              backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+            },
+
+            {},
+          ],
+        }}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          tooltips: {
+            callbacks: {
+              label: function (item, data) {
+                var label = data.datasets[item.datasetIndex].labels[item.index];
+                var value = data.datasets[item.datasetIndex].data[item.index];
+                return label + ': ' + value;
+              },
+            },
+          },
+        }}
+        datasetKeyProvider={datasetKeyProvider}
       />
-      <div>Выбрано мероприятие: {winAnswer.answer}</div>
-      <div>Дата проведения: {winAnswer.time}</div>
+      <div className="data-text">Выбрано мероприятие: {winAnswer.answer}</div>
+      <div className="data-text">Дата проведения: {winAnswer.time}</div>
       <button
+        className="button button--auth"
         onClick={(evt) => {
           evt.preventDefault();
           openSecondFase();
@@ -74,6 +118,7 @@ const FirstPhaseEnd = (props) => {
       >
         Перейти ко 2й фазе
       </button>
+      {admin === userId ? <StopEvent backServer={backServer} /> : ''}
     </div>
   );
 };
