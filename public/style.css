@@ -133,3 +133,17 @@ body {
 .indicator {
   font-weight: bold;
 }
+
+.react-autosuggest__input {
+  width: 225px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 5px;
+
+  font-size: 15px;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva,
+    Verdana, sans-serif;
+}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import getPickTimes from '../utils/time.js';
 import StopEvent from './stop-event.jsx';
+import Autocomplete from './autocomplete';
 
 const FirstPhase = (props) => {
   const { userId, dataBase, backServer } = props;
@@ -90,7 +91,7 @@ const FirstPhase = (props) => {
             onChange={(evt) => setChoosenEvent(evt.target.value)}
           ></input>
         </label>
-
+        <Autocomplete dataBase={dataBase} />
         <button
           className="button button--auth"
           disabled={alreadyAnswer}
