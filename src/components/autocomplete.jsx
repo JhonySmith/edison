@@ -41,9 +41,11 @@ class Autocomplete extends React.Component {
   }
 
   onChange(event, { newValue, method }) {
+    const { getEvent } = this.props;
     this.setState({
       value: newValue,
     });
+    getEvent(newValue);
   }
 
   onSuggestionsFetchRequested({ value }) {
@@ -62,7 +64,6 @@ class Autocomplete extends React.Component {
     const { dataBase } = this.props;
 
     dataBase.ref('events').on('value', (snapshot) => {
-      console.log(Object.values(snapshot.val()));
       if (Object.values(snapshot.val()).length !== this.state.events.length) {
         this.setState({ events: Object.values(snapshot.val()) });
       }

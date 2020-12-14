@@ -35,7 +35,6 @@ const StartEvent = (props) => {
         } else {
           startEvent();
         }
-        setbuttonDisabled(false);
       });
   };
 
@@ -65,11 +64,12 @@ const StartEvent = (props) => {
         type="button"
         onClick={(evt) => {
           evt.preventDefault();
+          setbuttonDisabled(true);
           validateForm();
         }}
         disabled={buttonDisabled}
       >
-        Старт
+        {buttonDisabled ? 'Загрузка...' : 'Старт'}
       </button>
       <div className="error-message">{notValid}</div>
     </form>

@@ -13,6 +13,7 @@ const FirstPhase = (props) => {
   const [firstPhaseUsers, setFirstPhaseUsers] = useState([]);
   const [notValid, setNotValid] = useState(false);
   const [admin, setAdmin] = useState(0);
+  const [events, setEvents] = useState([]);
 
   const alreadyAnswer = firstPhaseUsers.includes(userId);
 
@@ -34,6 +35,16 @@ const FirstPhase = (props) => {
     }
   });
 
+  dataBase.ref('events').on('value', (snapshot) => {
+    if (Object.values(snapshot.val()).length !== events.length) {
+      let eventsNow = [];
+      Object.values(snapshot.val()).forEach((event) => {
+        eventsNow.push(event.text);
+      });
+      setEvents(Object.values(snapshot.val()));
+    }
+  });
+
   // Подписываемся на счетчик оставшегося времени из БД
   dataBase.ref('event/config/firstPhaseTimeLeft').on('value', (snapshot) => {
     if (timeLeft !== snapshot.val()) {
@@ -52,9 +63,18 @@ const FirstPhase = (props) => {
   const validateForm = () => {
     if (choosenEvent && choosenTime) {
       sendAnswer();
+      if (!events.includes(choosenEvent)) {
+        dataBase.ref('events/' + (events.length + 1)).set({
+          text: choosenEvent,
+        });
+      }
     } else {
       setNotValid('Вы заполнили не все поля');
     }
+  };
+
+  const getEvent = (event) => {
+    setChoosenEvent(event);
   };
 
   return (
@@ -84,14 +104,8 @@ const FirstPhase = (props) => {
         </label>
         <label className="label label--auth" htmlFor="event">
           Введите мероприятие:
-          <input
-            className="input input--auth"
-            type="textarea"
-            name="event"
-            onChange={(evt) => setChoosenEvent(evt.target.value)}
-          ></input>
+          <Autocomplete dataBase={dataBase} getEvent={getEvent} />
         </label>
-        <Autocomplete dataBase={dataBase} />
         <button
           className="button button--auth"
           disabled={alreadyAnswer}
