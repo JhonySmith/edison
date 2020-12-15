@@ -1,5 +1,8 @@
 import React from 'react';
 
+import LoginInput from './login-input.jsx';
+import PasswordInput from './password-input.jsx';
+
 class Authorization extends React.Component {
   constructor(props) {
     super(props);
@@ -78,6 +81,14 @@ class Authorization extends React.Component {
       });
   }
 
+  getLoginHandler(login) {
+    this.setState({ login: login });
+  }
+
+  getPasswordHandler(password) {
+    this.setState({ password: password });
+  }
+
   render() {
     return (
       <form className="form form--auth">
@@ -85,39 +96,11 @@ class Authorization extends React.Component {
           Введите ваш email в качестве логина и пароль. Если не зарегестрированы, введите данные и
           нажмите - "Регистрация" !
         </b>
-        <label htmlFor="login" className="label label--auth">
-          Логин:
-          <input
-            className="input input--auth"
-            type="email"
-            name="login"
-            placeholder="E-mail"
-            onChange={(evt) => {
-              this.setState({ login: evt.target.value });
-            }}
-          ></input>
-        </label>
 
-        <label htmlFor="password" className="label label--auth">
-          Пароль:
-          <input
-            className="input input--auth"
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={(evt) => this.setState({ password: evt.target.value })}
-          ></input>
-        </label>
+        <LoginInput getLoginHandler={this.getLoginHandler} />
+        <PasswordInput getPasswordHandler={this.getPasswordHandler} />
 
-        <button
-          className="button button--auth"
-          onClick={(evt) => {
-            evt.preventDefault();
-            this.userLoginHandler();
-          }}
-        >
-          Вход
-        </button>
+
 
         <button
           className="button button--auth"
