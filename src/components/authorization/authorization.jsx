@@ -1,7 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import LoginInput from './login-input.jsx';
 import PasswordInput from './password-input.jsx';
+import Button from '../commons/button.jsx';
+import ErrorMessage from './error-message.jsx';
 
 class Authorization extends React.Component {
   constructor(props) {
@@ -9,10 +12,42 @@ class Authorization extends React.Component {
 
     this.state = {
       login: '',
-      password: '',
       id: '',
-      notValid: 0,
+      password: '',
+      notValid: '',
     };
+
+    this.getLoginHandler = this.getLoginHandler.bind(this);
+    this.getPasswordHandler = this.getPasswordHandler.bind(this);
+    this.userLoginHandler = this.userLoginHandler.bind(this);
+    this.userRegHandler = this.userRegHandler.bind(this);
+  }
+
+  render() {
+    return (
+      <form className="form form--auth">
+        <b className="bold-text bold-text--auth">
+          Введите ваш email в качестве логина и пароль. Если не зарегестрированы, введите данные и
+          нажмите - "Регистрация" !
+        </b>
+
+        <LoginInput getLoginHandler={this.getLoginHandler} />
+        <PasswordInput getPasswordHandler={this.getPasswordHandler} />
+        <Button text={'Войти'} onClick={this.userLoginHandler} />
+        <Button text={'Зарегестрироваться'} onClick={this.userRegHandler} />
+        <ErrorMessage errorMessage={this.state.notValid} />
+      </form>
+    );
+  }
+
+  // Получение введенного логина
+  getLoginHandler(login) {
+    this.setState({ login: login });
+  }
+
+  //Получение введенного пароля
+  getPasswordHandler(password) {
+    this.setState({ password: password });
   }
 
   // Вход с логином паролем
@@ -27,24 +62,7 @@ class Authorization extends React.Component {
         authEndHandler(this.state.login, this.state.id);
       })
       .catch((error) => {
-        let errorCode = error.code;
-
-        switch (errorCode) {
-          case 'auth/user-not-found':
-            this.setState({ notValid: 'Такого пользователя не существует' });
-            break;
-
-          case 'auth/invalid-email':
-            this.setState({ notValid: 'Вы ввели некорректный адрес почты' });
-            break;
-
-          case 'auth/wrong-password':
-            this.setState({ notValid: 'Проверьте правильность пароля' });
-            break;
-
-          default:
-            this.setState({ notValid: error.message });
-        }
+        this.setErrorMessageHandler(error.code);
       });
   }
 
@@ -60,62 +78,42 @@ class Authorization extends React.Component {
         authEndHandler(this.state.login, this.state.id);
       })
       .catch((error) => {
-        let errorCode = error.code;
-
-        switch (errorCode) {
-          case 'auth/email-already-in-use':
-            this.setState({ notValid: 'Такой пользователь уже существует' });
-            break;
-
-          case 'auth/wrong-password':
-            this.setState({ notValid: 'Проверьте правильность пароля' });
-            break;
-
-          case 'auth/weak-password':
-            this.setState({ notValid: 'Пароль ненадежен' });
-            break;
-
-          default:
-            this.setState({ notValid: error.message });
-        }
+        this.setErrorMessageHandler(error.code);
       });
   }
 
-  getLoginHandler(login) {
-    this.setState({ login: login });
-  }
+  // Вывод ошибки по коду
+  setErrorMessageHandler(errorCode) {
+    switch (errorCode) {
+      case 'auth/user-not-found':
+        this.setState({ notValid: 'Такого пользователя не существует' });
+        break;
 
-  getPasswordHandler(password) {
-    this.setState({ password: password });
-  }
+      case 'auth/invalid-email':
+        this.setState({ notValid: 'Вы ввели некорректный адрес почты' });
+        break;
 
-  render() {
-    return (
-      <form className="form form--auth">
-        <b className="bold-text bold-text--auth">
-          Введите ваш email в качестве логина и пароль. Если не зарегестрированы, введите данные и
-          нажмите - "Регистрация" !
-        </b>
+      case 'auth/wrong-password':
+        this.setState({ notValid: 'Проверьте правильность пароля' });
+        break;
 
-        <LoginInput getLoginHandler={this.getLoginHandler} />
-        <PasswordInput getPasswordHandler={this.getPasswordHandler} />
+      case 'auth/email-already-in-use':
+        this.setState({ notValid: 'Такой пользователь уже существует' });
+        break;
 
+      case 'auth/weak-password':
+        this.setState({ notValid: 'Пароль ненадежен' });
+        break;
 
-
-        <button
-          className="button button--auth"
-          onClick={(evt) => {
-            evt.preventDefault();
-            this.userRegHandler();
-          }}
-        >
-          Зарегестрироваться
-        </button>
-
-        <div className="error-message">{this.state.notValid ? this.state.notValid : ''}</div>
-      </form>
-    );
+      default:
+        this.setState({ notValid: errorCode });
+    }
   }
 }
+
+Authorization.propTypes = {
+  firebaseApp: PropTypes.object.isRequired,
+  authEndHandler: PropTypes.func.isRequired,
+};
 
 export default Authorization;

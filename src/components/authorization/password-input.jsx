@@ -1,5 +1,7 @@
+import PropTypes from 'prop-types';
+
 const PasswordInput = (props) => {
-  const { getPasswordHandler } = this.props;
+  const { getPasswordHandler } = props;
 
   return (
     <label htmlFor="password" className="label label--auth">
@@ -13,6 +15,10 @@ const PasswordInput = (props) => {
       ></input>
     </label>
   );
+};
+
+PasswordInput.propTypes = {
+  getPasswordHandler: PropTypes.func.isRequired,
 };
 
 export default PasswordInput;

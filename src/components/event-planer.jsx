@@ -2,8 +2,8 @@ import React from 'react';
 
 import { ShowingPage } from '../utils/constants.js';
 
-import Authorization from './authorization.jsx';
-import StartEvent from './start-event.jsx';
+import Authorization from './authorization/authorization.jsx';
+import StartEvent from './start-event/start-event.jsx';
 import FirstPhase from './first-phase.jsx';
 import SecondPhase from './second-phase.jsx';
 import FirstPhaseEnd from './first-phase-end.jsx';
@@ -76,13 +76,7 @@ export default class EventPlanner extends React.Component {
 
       // Окно авторизации
       default:
-        return (
-          <Authorization
-            firebaseApp={firebaseApp}
-            dataBase={dataBase}
-            authEndHandler={this.authEndHandler}
-          />
-        );
+        return <Authorization firebaseApp={firebaseApp} authEndHandler={this.authEndHandler} />;
     }
   }
 

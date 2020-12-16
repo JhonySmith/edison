@@ -1,5 +1,5 @@
 const Button = (props) => {
-  const { onClick, text } = this.props;
+  const { onClick, text } = props;
 
   return (
     <button

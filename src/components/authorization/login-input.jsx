@@ -1,5 +1,7 @@
+import PropTypes from 'prop-types';
+
 const LoginInput = (props) => {
-  const { getLoginHandler } = this.props;
+  const { getLoginHandler } = props;
 
   return (
     <label htmlFor="login" className="label label--auth">
@@ -13,6 +15,10 @@ const LoginInput = (props) => {
       ></input>
     </label>
   );
+};
+
+LoginInput.propTypes = {
+  getLoginHandler: PropTypes.func.isRequired,
 };
 
 export default LoginInput;
