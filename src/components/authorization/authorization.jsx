@@ -1,5 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { ActionCreator } from '../../store/reducer.js';
+
+import { firebaseApp } from '../../firebase/firebase-init';
 
 import LoginInput from './login-input.jsx';
 import PasswordInput from './password-input.jsx';
@@ -52,14 +56,13 @@ class Authorization extends React.Component {
 
   // Вход с логином паролем
   userLoginHandler() {
-    const { firebaseApp, authEndHandler } = this.props;
+    const { authEndHandler } = this.props;
 
     firebaseApp
       .auth()
       .signInWithEmailAndPassword(this.state.login, this.state.password)
       .then(() => {
-        this.setState({ id: firebaseApp.auth().currentUser.uid });
-        authEndHandler(this.state.login, this.state.id);
+        authEndHandler(this.state.login, firebaseApp.auth().currentUser.uid);
       })
       .catch((error) => {
         this.setErrorMessageHandler(error.code);
@@ -68,14 +71,13 @@ class Authorization extends React.Component {
 
   // Вход через регистрацию
   userRegHandler() {
-    const { firebaseApp, authEndHandler } = this.props;
+    const { authEndHandler } = this.props;
 
     firebaseApp
       .auth()
       .createUserWithEmailAndPassword(this.state.login, this.state.password)
       .then(() => {
-        this.setState({ id: firebaseApp.auth().currentUser.uid });
-        authEndHandler(this.state.login, this.state.id);
+        authEndHandler(this.state.login, firebaseApp.auth().currentUser.uid);
       })
       .catch((error) => {
         this.setErrorMessageHandler(error.code);
@@ -112,8 +114,15 @@ class Authorization extends React.Component {
 }
 
 Authorization.propTypes = {
-  firebaseApp: PropTypes.object.isRequired,
   authEndHandler: PropTypes.func.isRequired,
 };
 
-export default Authorization;
+const mapDispatchToProps = (dispatch) => ({
+  authEndHandler(user, id) {
+    dispatch(ActionCreator.currentUser(user));
+    dispatch(ActionCreator.currentUserId(id));
+  },
+});
+
+export { Authorization };
+export default connect(null, mapDispatchToProps)(Authorization);

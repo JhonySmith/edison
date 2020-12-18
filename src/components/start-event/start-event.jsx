@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { ShowingPage } from '../../utils/constants.js';
+import React from 'react';
 import PropTypes from 'prop-types';
+
+import { ShowingPage } from '../../utils/constants.js';
+import { dataBase } from '../../firebase/firebase-init.js';
+import { backServer } from '../../back-server/back-server-config.js';
 
 import FirstPhaseTimeInput from './first-phase-time-input.jsx';
 import SecondPhaseTimeInput from './second-phase-time-input.jsx';
@@ -17,16 +20,16 @@ class StartEvent extends React.Component {
       buttonDisabled: false,
     };
 
-    this.getFirstTimeHandler = this.getFirstTimeHandler.bind(this);
-    this.getSecondTimeHandler = this.getSecondTimeHandler.bind(this);
+    this.getFirstPhaseTimeHandler = this.getFirstPhaseTimeHandler.bind(this);
+    this.getSecondPhaseTimeHandler = this.getSecondPhaseTimeHandler.bind(this);
     this.startEvent = this.startEvent.bind(this);
   }
 
   render() {
     return (
       <form className="form form--auth">
-        <FirstPhaseTimeInput getFirstTimeHandler={this.getFirstTimeHandler} />
-        <SecondPhaseTimeInput getSecondTimeHandler={this.getSecondTimeHandler} />
+        <FirstPhaseTimeInput getFirstPhaseTimeHandler={this.getFirstPhaseTimeHandler} />
+        <SecondPhaseTimeInput getSecondPhaseTimeHandler={this.getSecondPhaseTimeHandler} />
         <StartEventButton
           buttonDisabled={this.state.buttonDisabled}
           startEventHandler={this.startEvent}
@@ -36,16 +39,16 @@ class StartEvent extends React.Component {
     );
   }
 
-  getFirstTimeHandler(time) {
+  getFirstPhaseTimeHandler(time) {
     this.setState({ firstPhaseTime: time });
   }
 
-  getSecondTimeHandler(time) {
+  getSecondPhaseTimeHandler(time) {
     this.setState({ secondPhaseTime: time });
   }
 
   startEvent() {
-    const { dataBase, backServer, currentUserID } = this.props;
+    const { userId } = this.props;
 
     dataBase
       .ref('event/config/phase')
@@ -57,7 +60,7 @@ class StartEvent extends React.Component {
           this.setState({ notValid: 'Вы ввели не все данные' });
         } else {
           backServer.post('startEvent', {
-            admin: currentUserID,
+            admin: userId,
             states: ShowingPage,
             timeout: {
               first: this.state.firstPhaseTime * 60000,
@@ -68,5 +71,7 @@ class StartEvent extends React.Component {
       });
   }
 }
+
+StartEvent.propTypes = {};
 
 export default StartEvent;

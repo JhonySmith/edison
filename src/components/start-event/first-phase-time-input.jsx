@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 const FirstPhaseTimeInput = (props) => {
-  const { getFirstTimeHandler } = props;
+  const { getFirstPhaseTimeHandler } = props;
 
   return (
     <label className="label label--auth" htmlFor="first-phase">
@@ -10,14 +10,14 @@ const FirstPhaseTimeInput = (props) => {
         className="input input--start-event"
         type="number"
         name="first-phase"
-        onChange={(evt) => getFirstTimeHandler(evt.target.value)}
+        onChange={(evt) => getFirstPhaseTimeHandler(evt.target.value)}
       ></input>
     </label>
   );
 };
 
 FirstPhaseTimeInput.propTypes = {
-  getFirstTimeHandler: PropTypes.func.isRequired,
+  getFirstPhaseTimeHandler: PropTypes.func.isRequired,
 };
 
 export default FirstPhaseTimeInput;
