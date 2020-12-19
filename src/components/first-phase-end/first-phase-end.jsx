@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 
+import getUniqArr from '../../utils/getUniqArr';
+
 import StopEvent from '../stop-event.jsx';
 import FinalChart from './final-chart.jsx';
-
-export const getUniqArr = (data, param) => {
-  const datas = new Set(data.map((dt) => dt[param]));
-  return [...datas];
-};
+import NextPhaseButton from './next-phase-button.jsx';
 
 const FirstPhaseEnd = (props) => {
   const { dataBase, openSecondFase, userId, backServer } = props;
@@ -14,28 +12,12 @@ const FirstPhaseEnd = (props) => {
   const [currentUsers, setcurrentUsers] = useState([]);
   const [admin, setAdmin] = useState(0);
 
-  // Подписываемся на счетчик времени из БД
-  dataBase.ref('event/config/').on('value', (snapshot) => {
-    if (snapshot.val().secondPhaseTimeLeft !== timeLeft) {
-      setTimeLeft(snapshot.val().secondPhaseTimeLeft);
-    }
-  });
-
   dataBase
     .ref('event/firstPhaseUsers')
     .once('value')
     .then((snapshot) => {
       if (Object.values(snapshot.val()).length !== currentUsers.length) {
         setcurrentUsers(Object.values(snapshot.val()));
-      }
-    });
-
-  dataBase
-    .ref('event/admin')
-    .once('value')
-    .then((snapshot) => {
-      if (admin !== snapshot.val()) {
-        setAdmin(snapshot.val());
       }
     });
 
@@ -51,18 +33,28 @@ const FirstPhaseEnd = (props) => {
   let answers = [];
   let answersLength = [];
 
+  // Проходим по каждому уникальному выбранному времени
   times.forEach((time) => {
+    // Отбираем пользователей выбравших данное время, для того чтобы понимать сколько всего ответов на данное время
     const filteredByTime = currentUsers.filter((element) => element.time === time);
+    // Пушим количество ответов пользователей в массив для дальнейшего построения диаграммы
     lengthTime.push(filteredByTime.length);
+    // Отбираем уникальные события в заданное время
     const uniqAnswer = getUniqArr(filteredByTime, 'event');
+    // Проходим по каждому уникальнму событию в текущее время
     uniqAnswer.forEach((answer) => {
+      // Пушим в массив ответов для построения диаграммы
       answers.push(answer);
+      // Получаем связку время и количество пользователей выбраших данное событие
       const filteredByAnswer = filteredByTime.filter((element) => element.event === answer);
+      // Проверяем если количество проголосовавших за больше чем наибольшее
       if (filteredByAnswer.length > winAnswer.count) {
+        // Если так, текущее событие в выбранное время становится победителем
         winAnswer.count = filteredByAnswer.length;
         winAnswer.answer = answer;
         winAnswer.time = time;
       }
+      // Пушим количество ответов по заданному событию и времени для построения диаграммы
       answersLength.push(filteredByAnswer.length);
     });
   });
@@ -72,15 +64,7 @@ const FirstPhaseEnd = (props) => {
       <FinalChart />
       <div className="data-text">Выбрано мероприятие: {winAnswer.answer}</div>
       <div className="data-text">Дата проведения: {winAnswer.time}</div>
-      <button
-        className="button button--auth"
-        onClick={(evt) => {
-          evt.preventDefault();
-          openSecondFase();
-        }}
-      >
-        Перейти ко 2й фазе
-      </button>
+      <NextPhaseButton />
       {admin === userId ? <StopEvent backServer={backServer} /> : ''}
     </div>
   );
