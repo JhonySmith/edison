@@ -8,7 +8,6 @@ import NextPhaseButton from './next-phase-button.jsx';
 
 const FirstPhaseEnd = (props) => {
   const { dataBase, openSecondFase, userId, backServer } = props;
-  const [timeLeft, setTimeLeft] = useState(0);
   const [currentUsers, setcurrentUsers] = useState([]);
   const [admin, setAdmin] = useState(0);
 
@@ -65,7 +64,7 @@ const FirstPhaseEnd = (props) => {
       <div className="data-text">Выбрано мероприятие: {winAnswer.answer}</div>
       <div className="data-text">Дата проведения: {winAnswer.time}</div>
       <NextPhaseButton />
-      {admin === userId ? <StopEvent backServer={backServer} /> : ''}
+      {admin === userId ? <StopEvent /> : ''}
     </div>
   );
 };

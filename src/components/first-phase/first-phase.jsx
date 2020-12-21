@@ -20,10 +20,10 @@ class FirstPhase extends React.Component {
       alreadyAnswer: false,
     };
 
+    this.timeChooseHandler = this.timeChooseHandler.bind(this);
+    this.getEventHandler = this.getEventHandler.bind(this);
     this.sendDataHandler = this.sendDataHandler.bind(this);
   }
-
-  componentDidMount() {}
 
   render() {
     const { admin, userId, firstPhaseTimeLeft, firstPhaseUsers } = this.props;

@@ -1,15 +1,7 @@
-import React from 'react';
+import backServer from '../back-server/back-server-config.js';
 
-class StopEvent extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.endEvent = this.endEvent.bind(this);
-  }
-
-  endEvent() {
-    const { backServer } = this.props;
-
+const StopEvent = (props) => {
+  const endEvent = () => {
     backServer.post('stopEvent', {
       states: 0,
       timeout: {
@@ -17,21 +9,19 @@ class StopEvent extends React.Component {
         second: 0,
       },
     });
-  }
+  };
 
-  render() {
-    return (
-      <button
-        className="button button--stop"
-        onClick={(evt) => {
-          evt.preventDefault();
-          this.endEvent();
-        }}
-      >
-        Отменить голосование
-      </button>
-    );
-  }
-}
+  return (
+    <button
+      className="button button--stop"
+      onClick={(evt) => {
+        evt.preventDefault();
+        endEvent();
+      }}
+    >
+      Остановить и отменить голосование
+    </button>
+  );
+};
 
 export default StopEvent;
