@@ -10,6 +10,7 @@ const FirstPhaseTimeInput = (props) => {
         className="input input--start-event"
         type="number"
         name="first-phase"
+        min="1"
         onChange={(evt) => getFirstPhaseTimeHandler(evt.target.value)}
       ></input>
     </label>

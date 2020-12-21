@@ -4,11 +4,15 @@ const MINUTES_STEP = 15;
 const getPickTimes = () => {
   const times = [];
   const nowTime = new Date();
-  nowTime.setMinutes(0);
+  const setTime = new Date().setMinutes(0);
 
-  while (nowTime.getHours() < END_TIME) {
-    times.push(`${nowTime.getHours()}:${nowTime.getMinutes() === 0 ? '00' : nowTime.getMinutes()}`);
-    nowTime.setMinutes(nowTime.getMinutes() + MINUTES_STEP);
+  while (setTime.getHours() < END_TIME) {
+    if (nowTime < setTime) {
+      times.push(
+        `${setTime.getHours()}:${setTime.getMinutes() === 0 ? '00' : setTime.getMinutes()}`,
+      );
+      setTime.setMinutes(setTime.getMinutes() + MINUTES_STEP);
+    }
   }
 
   times.push('23:00');

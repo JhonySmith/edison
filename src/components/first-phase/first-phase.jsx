@@ -1,5 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+
+import { dbEventsConfig, dbUsers, firebaseApp } from '../../firebase/firebase-init';
+import { ActionCreator } from '../../store/reducer';
 
 import TimerLeft from './timer-left.jsx';
 import UsersAnswersNumber from './users-answer-number.jsx';
@@ -7,8 +11,6 @@ import TimeSelect from './time-select.jsx';
 import EventChoose from './event-choose.jsx';
 import SendButton from './send-button.jsx';
 import StopEvent from '../stop-event.jsx';
-
-import { dataBase } from '../../firebase/firebase-init';
 
 class FirstPhase extends React.Component {
   constructor(props) {
@@ -25,17 +27,25 @@ class FirstPhase extends React.Component {
     this.sendDataHandler = this.sendDataHandler.bind(this);
   }
 
+  componentDidMount() {
+    const { getFirstPhaseTimeLeft } = this.props;
+
+    dbEventsConfig.onSnapshot((doc) => {
+      const data = doc.data();
+      getFirstPhaseTimeLeft(data.firstPhaseTimeLeft);
+    });
+  }
+
   render() {
     const { admin, userId, firstPhaseTimeLeft, firstPhaseUsers } = this.props;
 
-    const alreadyAnswerUsersId = Object.keys(firstPhaseUsers);
-    this.setState({ alreadyAnswer: alreadyAnswerUsersId.includes(userId) });
+    firstPhaseUsers.map((users) => users.id === userId && this.setState({ alreadyAnswer: true }));
 
     return (
       <section>
         <div className="indicator-block">
           <TimerLeft firstPhaseTime={firstPhaseTimeLeft} />
-          <UsersAnswersNumber answersNumber={alreadyAnswerUsersId.length} />
+          <UsersAnswersNumber answersNumber={firstPhaseUsers.length} />
         </div>
         <form className="form form--auth">
           <TimeSelect timeChooseHandler={this.timeChooseHandler} />
@@ -43,7 +53,7 @@ class FirstPhase extends React.Component {
           <SendButton sendDataHandler={this.sendDataHandler} disabled={this.state.alreadyAnswer} />
           <div className="error-message">{false}</div>
         </form>
-        {admin === userId ? <StopEvent /> : ''}
+        {admin === userId && <StopEvent />}
       </section>
     );
   }
@@ -59,18 +69,33 @@ class FirstPhase extends React.Component {
   sendDataHandler() {
     const { userId } = this.props;
 
-    dataBase.ref('event/firstPhaseUsers' + userId).set({
-      time: this.state.choosenTime,
-      event: this.state.event,
+    dbUsers.update({
+      firstPhase: firebaseApp.firestore.FieldValue.arrayUnion({
+        userId,
+        time: this.state.choosenTime,
+        event: this.state.event,
+      }),
     });
   }
 }
 
+FirstPhase.propTypes = {
+  userId: PropTypes.string.isRequired,
+  admin: PropTypes.string.isRequired,
+  firstPhaseTimeLeft: PropTypes.number.isRequired,
+  firstPhaseUsers: PropTypes.array.isRequired,
+  getFirstPhaseTimeLeft: PropTypes.func.isRequired,
+};
+
 const mapStateToProps = (state) => ({
-  admin: state.admin,
-  userId: state.userId,
   firstPhaseTimeLeft: state.firstPhaseTimeLeft,
   firstPhaseUsers: state.firstPhaseUsers,
 });
 
-export default connect(mapStateToProps, null)(FirstPhase);
+const mapDispatchToProps = (dispatch) => ({
+  getFirstPhaseTimeLeft(time) {
+    dispatch(ActionCreator.firstPhaseTimeLeft(time));
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(FirstPhase);

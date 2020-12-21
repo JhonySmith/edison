@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { ShowingPage } from '../../utils/constants.js';
-import { dataBase } from '../../firebase/firebase-init.js';
 import { backServer } from '../../back-server/back-server-config.js';
 
 import FirstPhaseTimeInput from './first-phase-time-input.jsx';
@@ -48,30 +47,28 @@ class StartEvent extends React.Component {
   }
 
   startEvent() {
-    const { userId } = this.props;
+    const { userId, admin } = this.props;
 
-    dataBase
-      .ref('event/config/phase')
-      .once('value')
-      .then((snapshot) => {
-        if (snapshot.val() !== 'startEvent') {
-          this.setState({ notValid: 'Кто то уже запустил голосование' });
-        } else if (!this.state.firstPhaseTime || !this.state.secondPhaseTime) {
-          this.setState({ notValid: 'Вы ввели не все данные' });
-        } else {
-          backServer.post('startEvent', {
-            admin: userId,
-            states: ShowingPage,
-            timeout: {
-              first: this.state.firstPhaseTime * 60000,
-              second: this.state.secondPhaseTime * 60000,
-            },
-          });
-        }
+    if (admin) {
+      this.setState({ notValid: 'Кто то уже запустил голосование' });
+    } else if (!this.state.firstPhaseTime || !this.state.secondPhaseTime) {
+      this.setState({ notValid: 'Вы ввели не все данные' });
+    } else {
+      backServer.post('startEvent', {
+        admin: userId,
+        states: ShowingPage,
+        timeout: {
+          first: this.state.firstPhaseTime * 60000,
+          second: this.state.secondPhaseTime * 60000,
+        },
       });
+    }
   }
 }
 
-StartEvent.propTypes = {};
+StartEvent.propTypes = {
+  admin: PropTypes.string,
+  userId: PropTypes.string,
+};
 
 export default StartEvent;

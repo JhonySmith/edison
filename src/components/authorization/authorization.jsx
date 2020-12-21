@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { ActionCreator } from '../../store/reducer.js';
 
-import { firebaseApp } from '../../firebase/firebase-init';
+import { authorization } from '../../firebase/firebase-init';
 
 import LoginInput from './login-input.jsx';
 import PasswordInput from './password-input.jsx';
@@ -58,11 +58,10 @@ class Authorization extends React.Component {
   userLoginHandler() {
     const { authEndHandler } = this.props;
 
-    firebaseApp
-      .auth()
+    authorization
       .signInWithEmailAndPassword(this.state.login, this.state.password)
       .then(() => {
-        authEndHandler(this.state.login, firebaseApp.auth().currentUser.uid);
+        authEndHandler(this.state.login, authorization.currentUser.uid);
       })
       .catch((error) => {
         this.setErrorMessageHandler(error.code);
@@ -73,11 +72,10 @@ class Authorization extends React.Component {
   userRegHandler() {
     const { authEndHandler } = this.props;
 
-    firebaseApp
-      .auth()
+    authorization
       .createUserWithEmailAndPassword(this.state.login, this.state.password)
       .then(() => {
-        authEndHandler(this.state.login, firebaseApp.auth().currentUser.uid);
+        authEndHandler(this.state.login, authorization.currentUser.uid);
       })
       .catch((error) => {
         this.setErrorMessageHandler(error.code);

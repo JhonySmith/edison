@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { dataBase } from '../firebase/firebase-init.js';
+import { dbEventsConfig, dbUsers } from '../firebase/firebase-init.js';
 import { ActionCreator } from '../store/reducer.js';
 import { ShowingPage } from '../utils/constants.js';
 
@@ -13,18 +13,22 @@ import FirstPhaseEnd from './first-phase-end/first-phase-end.jsx';
 
 class App extends React.Component {
   componentDidMount() {
-    const { getPhaseHandler, getFirstPhaseUsers } = this.props;
-    dataBase.ref('event/config/phase').on('value', (snapshot) => {
-      getPhaseHandler(snapshot.val());
+    const { getPhaseHandler, getFirstPhaseUsers, getAdmin } = this.props;
+
+    dbEventsConfig.onSnapshot((doc) => {
+      const data = doc.data();
+      getPhaseHandler(data.currentPhase);
+      getAdmin(data.admin);
     });
 
-    dataBase.ref('event/firstPhaseUsers').on('value', (snapshot) => {
-      getFirstPhaseUsers(snapshot.val());
+    dbUsers.onSnapshot((doc) => {
+      const data = doc.data();
+      getFirstPhaseUsers(data.firstPhase);
     });
   }
 
   render() {
-    const { user, phase, userId } = this.props;
+    const { user, phase, userId, admin } = this.props;
 
     if (!user) {
       return <Authorization />;
@@ -32,26 +36,29 @@ class App extends React.Component {
 
     switch (phase) {
       case ShowingPage.FIRST_PHASE:
-        return <FirstPhase />;
+        return <FirstPhase admin={admin} userId={userId} />;
 
       case ShowingPage.FIRST_PHASE_END:
         return <FirstPhaseEnd />;
 
       default:
-        return <StartEvent userId={userId} />;
+        return <StartEvent userId={userId} admin={admin} />;
     }
   }
 }
 
 App.propTypes = {
+  admin: PropTypes.string.isRequired,
   user: PropTypes.string.isRequired,
   userId: PropTypes.string.isRequired,
   phase: PropTypes.string.isRequired,
   getPhaseHandler: PropTypes.func.isRequired,
   getFirstPhaseUsers: PropTypes.func.isRequired,
+  getAdmin: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
+  admin: state.admin,
   user: state.user,
   phase: state.phase,
   userId: state.userId,
@@ -63,6 +70,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   getFirstPhaseUsers(users) {
     dispatch(ActionCreator.firstPhaseUsers(users));
+  },
+  getAdmin(admin) {
+    dispatch(ActionCreator.currentAdmin(admin));
   },
 });
 
