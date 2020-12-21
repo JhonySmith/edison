@@ -7,7 +7,7 @@ import FinalChart from './final-chart.jsx';
 import NextPhaseButton from './next-phase-button.jsx';
 
 const FirstPhaseEnd = (props) => {
-  const { dataBase, openSecondFase, userId, backServer } = props;
+  const { dataBase, userId, backServer } = props;
   const [currentUsers, setcurrentUsers] = useState([]);
   const [admin, setAdmin] = useState(0);
 
