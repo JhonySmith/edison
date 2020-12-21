@@ -13,9 +13,13 @@ import FirstPhaseEnd from './first-phase-end/first-phase-end.jsx';
 
 class App extends React.Component {
   componentDidMount() {
-    const { getPhaseHandler } = this.props;
+    const { getPhaseHandler, getFirstPhaseUsers } = this.props;
     dataBase.ref('event/config/phase').on('value', (snapshot) => {
       getPhaseHandler(snapshot.val());
+    });
+
+    dataBase.ref('event/firstPhaseUsers').on('value', (snapshot) => {
+      getFirstPhaseUsers(snapshot.val());
     });
   }
 
@@ -44,6 +48,7 @@ App.propTypes = {
   userId: PropTypes.string.isRequired,
   phase: PropTypes.string.isRequired,
   getPhaseHandler: PropTypes.func.isRequired,
+  getFirstPhaseUsers: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -55,6 +60,9 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   getPhaseHandler(phase) {
     dispatch(ActionCreator.currentPhase(phase));
+  },
+  getFirstPhaseUsers(users) {
+    dispatch(ActionCreator.firstPhaseUsers(users));
   },
 });
 

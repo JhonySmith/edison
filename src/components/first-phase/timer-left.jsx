@@ -1,21 +1,17 @@
-import { useState, useEffect } from 'react';
-import { dataBase } from '../../firebase/firebase-init';
+import PropTypes from 'prop-types';
 
-const TimerLeft = () => {
-  const [timeLeft, setTimeLeft] = useState(0);
-
-  useEffect(() => {
-    dataBase.ref('event/config/firstPhaseTimeLeft').on('value', (snapshot) => {
-      let timeLeftNow = snapshot.val();
-      setTimeLeft(timeLeftNow / 60000);
-    });
-  });
+const TimerLeft = (props) => {
+  const { firstPhaseTimeLeft } = props;
 
   return (
     <div className="indicator-name">
-      Оставшееся время: <span className="indicator">{timeLeft} мин.</span>
+      Оставшееся время: <span className="indicator">{firstPhaseTimeLeft} мин.</span>
     </div>
   );
+};
+
+TimerLeft.propTypes = {
+  firstPhaseTimeLeft: PropTypes.number.isRequired,
 };
 
 export default TimerLeft;

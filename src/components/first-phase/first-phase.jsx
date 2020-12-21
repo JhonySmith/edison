@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-
-import { ActionCreator } from '../../store/reducer.js';
 
 import TimerLeft from './timer-left.jsx';
 import UsersAnswersNumber from './users-answer-number.jsx';
@@ -19,31 +17,30 @@ class FirstPhase extends React.Component {
     this.state = {
       choosenTime: '',
       event: '',
-      usersAnswersCount: '',
+      alreadyAnswer: false,
     };
+
+    this.sendDataHandler = this.sendDataHandler.bind(this);
   }
 
-  componentDidMount() {
-    const { setUsersHandler } = this.props;
-    dataBase.ref('event/firstPhaseUsers').on('value', (snapshot) => {
-      let currentUsers = Object.values(snapshot.val());
-      setUsersHandler(currentUsers);
-    });
-  }
+  componentDidMount() {}
 
   render() {
-    const { admin, userId, firstPhaseTime, setUsersHandler, firstPhaseUsers } = this.props;
+    const { admin, userId, firstPhaseTimeLeft, firstPhaseUsers } = this.props;
+
+    const alreadyAnswerUsersId = Object.keys(firstPhaseUsers);
+    this.setState({ alreadyAnswer: alreadyAnswerUsersId.includes(userId) });
 
     return (
       <section>
         <div className="indicator-block">
-          <TimerLeft />
-          <UsersAnswersNumber answersNumber={firstPhaseUsers.length} />
+          <TimerLeft firstPhaseTime={firstPhaseTimeLeft} />
+          <UsersAnswersNumber answersNumber={alreadyAnswerUsersId.length} />
         </div>
         <form className="form form--auth">
           <TimeSelect timeChooseHandler={this.timeChooseHandler} />
           <EventChoose getEvent={this.getEventHandler} />
-          <SendButton />
+          <SendButton sendDataHandler={this.sendDataHandler} disabled={this.state.alreadyAnswer} />
           <div className="error-message">{false}</div>
         </form>
         {admin === userId ? <StopEvent /> : ''}
@@ -58,19 +55,22 @@ class FirstPhase extends React.Component {
   getEventHandler(event) {
     this.setState({ event });
   }
+
+  sendDataHandler() {
+    const { userId } = this.props;
+
+    dataBase.ref('event/firstPhaseUsers' + userId).set({
+      time: this.state.choosenTime,
+      event: this.state.event,
+    });
+  }
 }
 
 const mapStateToProps = (state) => ({
   admin: state.admin,
   userId: state.userId,
-  firstPhaseTime: state.firstPhaseTime,
+  firstPhaseTimeLeft: state.firstPhaseTimeLeft,
   firstPhaseUsers: state.firstPhaseUsers,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setUsersHandler(users) {
-    dispatch(ActionCreator.firstPhaseUsers(users));
-  },
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(FirstPhase);
+export default connect(mapStateToProps, null)(FirstPhase);

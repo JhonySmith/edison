@@ -4,7 +4,7 @@ const ActionType = {
   CURRENT_USER_ID: `CURRENT_USER_ID`,
   CURRENT_PHASE: `CURRENT_PHASE`,
   FIRST_PHASE_TIME: `FIRST_PHASE_TIME`,
-  SECOND_PHASE_TIME: `SECOND_PHASE_TIME`,
+  SECOND_PHASE_TIME: `SECOND_PHASE_TIME_LEFT`,
   FIRST_PHASE_USERS: `FISRT_PHASE_USERS`,
 };
 
@@ -13,7 +13,7 @@ const initialState = {
   userId: '',
   phase: '',
   admin: '',
-  firstPhaseTime: 0,
+  firstPhaseTimeLeft: 0,
   firstPhaseUsers: [],
 };
 
@@ -42,9 +42,9 @@ const ActionCreator = {
       payload: admin,
     };
   },
-  firstPhaseTime: (time) => {
+  firstPhaseTimeLeft: (time) => {
     return {
-      type: ActionType.FIRST_PHASE_TIME,
+      type: ActionType.FIRST_PHASE_TIME_LEFT,
       payload: time,
     };
   },
@@ -74,9 +74,9 @@ const reducer = (state = initialState, action) => {
       return Object.assign({}, state, {
         admin: action.payload,
       });
-    case ActionType.FIRST_PHASE_TIME:
+    case ActionType.FIRST_PHASE_TIME_LEFT:
       return Object.assign({}, state, {
-        firstPhaseTime: action.payload,
+        firstPhaseTimeLeft: action.payload,
       });
     case ActionType.FIRST_PHASE_USERS:
       return Object.assign({}, state, {

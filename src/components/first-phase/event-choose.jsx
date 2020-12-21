@@ -1,4 +1,4 @@
-import Autocomplete from '../autocomplete.jsx';
+import Autocomplete from './autocomplete.jsx';
 
 const EventChoose = (props) => {
   const { getEvent } = props;
