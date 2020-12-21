@@ -5,4 +5,7 @@ import 'firebase/database';
 import firebaseConfig from './firebase-config.js';
 
 export const firebaseApp = firebase.initializeApp(firebaseConfig);
-export const dataBase = firebaseApp.database();
+export const authorization = firebaseApp.auth();
+export const dataBase = firebaseApp.firestore();
+export const dbEventsConfig = dataBase.collection('state').doc('config');
+export const dbUsers = dataBase.collection('state').doc('users');

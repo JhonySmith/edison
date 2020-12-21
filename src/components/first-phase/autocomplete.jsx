@@ -1,5 +1,6 @@
 import React from 'react';
 import Autosuggest from 'react-autosuggest';
+import { dataBase } from '../../firebase/firebase-init';
 
 function escapeRegexCharacters(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -61,8 +62,6 @@ class Autocomplete extends React.Component {
   }
 
   render() {
-    const { dataBase } = this.props;
-
     dataBase.ref('events').on('value', (snapshot) => {
       if (Object.values(snapshot.val()).length !== this.state.events.length) {
         this.setState({ events: Object.values(snapshot.val()) });
